@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.35)
+cmake_minimum_required(VERSION 3.31)
 
 set(CMAKE_CXX_COMPILER /usr/bin/clang++-19)
 set(CMAKE_CXX_STANDARD 20)

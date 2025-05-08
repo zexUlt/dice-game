@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/hash.hpp"
-#include "dice.hpp"
 
 #include <unordered_map>
 #include <vector>
@@ -29,8 +28,11 @@ class ScoreCalculator {
 public:
     ScoreCalculator();
 
-    int GetScore(std::vector<int> selectedDices) const;
+    bool HasPossibleMoves(const std::vector<int>& selectedDices) const;
+    int GetScore(const std::vector<int>& selectedDices) const;
 
 private:
+    std::array<int, 7> CountDiceValues(const std::vector<int>& selectedDices) const;
+
     std::unordered_map<std::pair<int, int>, int> ScoreRules_;
 };

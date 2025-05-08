@@ -12,6 +12,8 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
+
+
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -20,6 +22,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install Clang
+      uses: egor-tensin/setup-clang@v1.4
+      with:
+        version: 19
+        platform: x64
+
     - uses: actions/checkout@v4
 
     - name: Configure CMake
@@ -36,4 +44,5 @@ jobs:
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
+
 

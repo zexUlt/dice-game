@@ -1,6 +1,5 @@
 ---
 Language:        Cpp
-# BasedOnStyle:  InheritParentConfig
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: true
@@ -10,7 +9,8 @@ AlignEscapedNewlines: Left
 AlignOperands:   Align
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
-# AllowAllParametersOfDeclarationOnNextLine: true
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers: Never
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
@@ -48,8 +48,6 @@ BreakBeforeBinaryOperators: None
 BreakBeforeInheritanceComma: false
 BreakInheritanceList: AfterColon
 BreakBeforeTernaryOperators: true
-BreakConstructorInitializersBeforeComma: false
-BreakConstructorInitializers: AfterColon
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit:     120

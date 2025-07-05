@@ -13,3 +13,15 @@ void Dice::Roll() {
 int Dice::GetValue() const {
     return CurrentValue;
 }
+
+void Dice::SetID(int newId) {
+    if (ID != -1) {
+        return;
+    }
+
+    ID = newId;
+}
+
+int Dice::GetID() const {
+    return ID;
+}

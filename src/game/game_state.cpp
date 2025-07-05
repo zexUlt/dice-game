@@ -1,5 +1,6 @@
 #include "game/game_state.hpp"
 
+#include "debug/debug.hpp"
 #include "game/player.hpp"
 
 GameState::GameState(int winningScore)
@@ -9,7 +10,7 @@ GameState::GameState(int winningScore)
 
 bool GameState::IsGameOver() const {
     for (const auto& player : Players_) {
-        if (player.CurrentScore > WinningScore_) {
+        if (player.TotalScore > WinningScore_) {
             return true;
         }
     }
@@ -21,7 +22,23 @@ int GameState::GetActivePlayer() const {
     return ActivePlayer_;
 }
 
-std::array<int, 6> GameState::GetActivePlayerDices() const {
+int GameState::GetActivePlayerStashedScore() const {
+    return Players_[ActivePlayer_].StashedScore;
+}
+
+int GameState::GetActivePlayerUnstashedScore() const {
+    return Players_[ActivePlayer_].UnstashedScore;
+}
+
+int GameState::GetWinningScore() const {
+    return WinningScore_;
+}
+
+std::pair<int, int> GameState::GetAllPlayersTotalScore() const {
+    return {Players_[0].TotalScore, Players_[1].TotalScore};
+}
+
+std::vector<std::pair<int, int>> GameState::GetActivePlayerDices() const {
     return Players_.at(ActivePlayer_).GetDicesState();
 }
 
@@ -29,19 +46,50 @@ void GameState::PassTurn() {
     ActivePlayer_ = 1 - ActivePlayer_;
 }
 
-void GameState::ProcessTurnEnd() {
-}
-
-void GameState::ProcessTurnStart() {
+void GameState::OnPlayerStashScore() {
     auto& activePlayer = Players_[ActivePlayer_];
 
     activePlayer.RollDices();
 }
 
-bool GameState::ProcessTurnMid(const std::vector<int>& selectedDices) {
-    if (!ScoreCalculator_.HasPossibleMoves(selectedDices)) {
-        return false;
+void GameState::OnPlayerEndTurn() {
+    auto& activePlayer = Players_[ActivePlayer_];
+
+    activePlayer.TotalScore += activePlayer.StashedScore;
+    activePlayer.StashedScore = 0;
+
+    PassTurn();
+}
+
+void GameState::OnPlayerBeginPlay() {
+    auto& activePlayer = Players_[ActivePlayer_];
+
+    activePlayer.RollDices();
+}
+
+GameState::ETurnResult GameState::ProcessTurn(const std::vector<int>& selectedDices) {
+    const auto& activeDicesWithIndicies = GetActivePlayerDices();
+    std::vector<int> activeDices;
+    activeDices.reserve(activeDicesWithIndicies.size());
+    for (const auto [_, value] : activeDicesWithIndicies) {
+        activeDices.push_back(value);
     }
 
-    return true;
+    if (!ScoreCalculator_.HasPossibleMoves(activeDices)) {
+        return ETurnResult::NoMoves;
+    }
+
+    auto& activePlayer       = Players_[ActivePlayer_];
+    auto selectedDicesValues = activePlayer.SelectDices(selectedDices);
+    LOG_DEBUG_ARRAY(selectedDices);
+    LOG_DEBUG_ARRAY(selectedDicesValues);
+    auto playerScore = ScoreCalculator_.GetScore(selectedDicesValues);
+    LOG_DEBUG(playerScore)
+    if (playerScore == 0) {
+        return ETurnResult::BadSelection;
+    }
+
+    activePlayer.StashedScore += playerScore;
+
+    return ETurnResult::OK;
 }

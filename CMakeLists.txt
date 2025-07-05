@@ -21,6 +21,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #      SETTING UP COMPILE OPTIONS
 # =======================================
 # add_compile_options(-Wall)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}-stdlib=libc++")
 set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_options(
     "${CMAKE_CXX_FLAGS}"
@@ -117,6 +118,7 @@ target_link_libraries(unit_tests
         gtest_main
         ${PROJECT_LIBRARY}
 )
+set(BUILD_GMOCK OFF)
 
 enable_testing()
 add_test(NAME UnitTest COMMAND unit_tests)

@@ -1,4 +1,14 @@
+# Ignore CI build directory
 build/
-CMakeCache.txt
+
+# VSCode files
+.vscode
 .cache
+
+# Ignore cmake generated directories and files.
 CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+Makefile

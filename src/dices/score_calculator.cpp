@@ -1,8 +1,6 @@
 #include "dices/score_calculator.hpp"
 
 #include <algorithm>
-#include <set>
-#include <unordered_set>
 #include <utility>
 
 ScoreCalculator::ScoreCalculator() {

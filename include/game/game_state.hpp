@@ -7,17 +7,31 @@
 
 class GameState {
 public:
+    enum class ETurnResult {
+        OK,
+        NoMoves,
+        BadSelection
+    };
+
     GameState(int winningScore);
 
     bool IsGameOver() const;
+
     int GetActivePlayer() const;
-    std::array<int, 6> GetActivePlayerDices() const;
-    void PassTurn();
-    void ProcessTurnStart();
-    bool ProcessTurnMid(const std::vector<int>& selectedDices);
-    void ProcessTurnEnd();
+    int GetActivePlayerStashedScore() const;
+    int GetActivePlayerUnstashedScore() const;
+    std::pair<int, int> GetAllPlayersTotalScore() const;
+    int GetWinningScore() const;
+    std::vector<std::pair<int, int>> GetActivePlayerDices() const;
+
+    void OnPlayerBeginPlay();
+    ETurnResult ProcessTurn(const std::vector<int>& selectedDices);
+    void OnPlayerStashScore();
+    void OnPlayerEndTurn();
 
 private:
+    void PassTurn();
+
     int WinningScore_;
     int ActivePlayer_;
     ScoreCalculator ScoreCalculator_;

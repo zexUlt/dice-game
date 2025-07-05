@@ -6,13 +6,21 @@
     "configurations": [
         {
             "name": "Debug Unit Tests",
-            "type": "lldb",
+            "type": "lldb-dap",
             "request": "launch",
             "program": "${workspaceFolder}/build/unit_tests", // Path to your unit tests executable
             "args": [],
             "cwd": "${workspaceFolder}/build",
             "preLaunchTask": "CMake: build", // Optional: If you have a build task set up
-            ""
+        },
+        {
+            "name": "Debug App",
+            "type": "lldb-dap",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/dice-game", // Path to your unit tests executable
+            "args": [],
+            "cwd": "${workspaceFolder}/build",
+            "preLaunchTask": "CMake: build", // Optional: If you have a build task set up
         }
     ]
 }

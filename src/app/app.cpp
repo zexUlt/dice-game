@@ -1,5 +1,6 @@
 #include "app/app.hpp"
 
+#include "app/user_input_component.hpp"
 #include "enums/game_state.hpp"
 #include "game/game_state.hpp"
 
@@ -13,7 +14,8 @@ App::App([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 
 void App::Run() {
     ETurnState currentTurnState = ETurnState::TurnStart;
-    while (!GameState_.IsGameOver()) {
+    int winner;
+    while (!GameState_.IsGameOver(winner)) {
         switch (currentTurnState) {
             case ETurnState::TurnStart: {
                 WriteMessage(std::format("Player{}'s turn", GameState_.GetActivePlayer() + 1));
@@ -22,12 +24,39 @@ void App::Run() {
                 break;
             }
             case ETurnState::DiceSelect: {
+                if (!GameState_.CheckMoves()) {
+                    WriteMessage("Bad luck! No possible selection");
+                    currentTurnState = ETurnState::TurnEnd;
+                    break;
+                }
+
                 std::vector<int> selection;
-                WriteMessage("Select dices by entering their indexes delimetered with spaces:");
+                WriteMessage(CONTROLS_HINT);
                 DisplayDices();
-                const auto [ok, message] = UserInputHandler_.AskForDiceSelection(selection);
-                if (!ok) {
-                    WriteMessage(*message);
+                const auto [result, message] = UserInputHandler_.AskForInput(selection);
+                bool resume                  = false;
+                switch (result) {
+                    case UserInputComponent::InputResult::Error: {
+                        WriteMessage(*message);
+                        break;
+                    }
+                    case UserInputComponent::InputResult::Stash: {
+                        GameState_.OnPlayerStashScore();
+                        DisplayGameStatus();
+                        break;
+                    }
+                    case UserInputComponent::InputResult::Finish: {
+                        GameState_.OnPlayerFinishTurn();
+                        currentTurnState = ETurnState::TurnEnd;
+                        break;
+                    }
+                    case UserInputComponent::InputResult::DiceSelect: {
+                        resume = true;
+                        break;
+                    }
+                }
+
+                if (!resume) {
                     break;
                 }
 
@@ -45,13 +74,11 @@ void App::Run() {
                     }
                     case GameState::ETurnResult::OK: {
                         DisplayGameStatus();
-                        GameState_.OnPlayerStashScore();
                     }
                 }
                 break;
             }
             case ETurnState::TurnEnd: {
-                GameState_.OnPlayerEndTurn();
                 currentTurnState = ETurnState::TurnStart;
                 DisplayGameStatus();
                 break;
@@ -60,14 +87,12 @@ void App::Run() {
                 break;
         }
     }
+
+    WriteMessage(std::format("Player {} is a winner!!!", winner));
 }
 
 void App::WriteMessage(std::string_view message) const {
     std::cout << std::format("> {}\n", message);
-}
-
-void App::DrawControlsHint() const {
-    WriteMessage(CONTROLS_HINT);
 }
 
 void App::DisplayGameStatus() const {

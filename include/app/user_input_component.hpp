@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 class UserInputComponent {
@@ -12,8 +13,19 @@ public:
         TooMuchInput
     };
 
-    std::pair<bool, std::optional<std::string_view>> AskForDiceSelection(std::vector<int>& outSelection) const;
+    enum class InputResult {
+        Error,
+        Stash,
+        Finish,
+        DiceSelect
+    };
+
+    std::pair<InputResult, std::optional<std::string_view>> AskForInput(std::vector<int>& outSelection) const;
     EParseResult ParseUserSelectedDices(const std::string& userInput, std::vector<int>& outSelectedDices) const;
     bool ValidateSelectedDices(const std::vector<int>& selectedDices) const;
     void NormalizeSelectedDices(std::vector<int>& selectedDices) const;
+
+private:
+    static constexpr char STASH_COMMAND = 's';
+    static constexpr char FINISH_COMMAND = 'e';
 };

@@ -15,7 +15,7 @@ public:
 
     GameState(int winningScore);
 
-    bool IsGameOver() const;
+    bool IsGameOver(int& winner) const;
 
     int GetActivePlayer() const;
     int GetActivePlayerStashedScore() const;
@@ -27,7 +27,9 @@ public:
     void OnPlayerBeginPlay();
     ETurnResult ProcessTurn(const std::vector<int>& selectedDices);
     void OnPlayerStashScore();
-    void OnPlayerEndTurn();
+    void OnPlayerFinishTurn();
+
+    bool CheckMoves();
 
 private:
     void PassTurn();

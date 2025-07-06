@@ -1,6 +1,4 @@
 #include "game/game_state.hpp"
-
-#include "debug/debug.hpp"
 #include "game/player.hpp"
 
 GameState::GameState(int winningScore)
@@ -8,9 +6,10 @@ GameState::GameState(int winningScore)
     , ActivePlayer_(0) {
 }
 
-bool GameState::IsGameOver() const {
-    for (const auto& player : Players_) {
-        if (player.TotalScore > WinningScore_) {
+bool GameState::IsGameOver(int& winner) const {
+    for (int i = 0; i < Players_.size(); ++i) {
+        if (Players_[i].TotalScore > WinningScore_) {
+            winner = i + 1;
             return true;
         }
     }
@@ -48,15 +47,15 @@ void GameState::PassTurn() {
 
 void GameState::OnPlayerStashScore() {
     auto& activePlayer = Players_[ActivePlayer_];
-
+    activePlayer.FinishRound();
     activePlayer.RollDices();
 }
 
-void GameState::OnPlayerEndTurn() {
+void GameState::OnPlayerFinishTurn() {
     auto& activePlayer = Players_[ActivePlayer_];
 
-    activePlayer.TotalScore += activePlayer.StashedScore;
-    activePlayer.StashedScore = 0;
+    activePlayer.FinishRound();
+    activePlayer.FinishTurn();
 
     PassTurn();
 }
@@ -68,6 +67,26 @@ void GameState::OnPlayerBeginPlay() {
 }
 
 GameState::ETurnResult GameState::ProcessTurn(const std::vector<int>& selectedDices) {
+    if (!CheckMoves()) {
+        return ETurnResult::NoMoves;
+    }
+
+    auto& activePlayer       = Players_[ActivePlayer_];
+    auto selectedDicesValues = activePlayer.SelectDices(selectedDices);
+
+    auto playerScore = ScoreCalculator_.GetScore(selectedDicesValues);
+
+    if (playerScore == 0) {
+        return ETurnResult::BadSelection;
+    }
+
+    activePlayer.SaveLastSelectedDices(selectedDices);
+    activePlayer.UnstashedScore += playerScore;
+
+    return ETurnResult::OK;
+}
+
+bool GameState::CheckMoves() {
     const auto& activeDicesWithIndicies = GetActivePlayerDices();
     std::vector<int> activeDices;
     activeDices.reserve(activeDicesWithIndicies.size());
@@ -75,21 +94,5 @@ GameState::ETurnResult GameState::ProcessTurn(const std::vector<int>& selectedDi
         activeDices.push_back(value);
     }
 
-    if (!ScoreCalculator_.HasPossibleMoves(activeDices)) {
-        return ETurnResult::NoMoves;
-    }
-
-    auto& activePlayer       = Players_[ActivePlayer_];
-    auto selectedDicesValues = activePlayer.SelectDices(selectedDices);
-    LOG_DEBUG_ARRAY(selectedDices);
-    LOG_DEBUG_ARRAY(selectedDicesValues);
-    auto playerScore = ScoreCalculator_.GetScore(selectedDicesValues);
-    LOG_DEBUG(playerScore)
-    if (playerScore == 0) {
-        return ETurnResult::BadSelection;
-    }
-
-    activePlayer.StashedScore += playerScore;
-
-    return ETurnResult::OK;
+    return ScoreCalculator_.HasPossibleMoves(activeDices);
 }

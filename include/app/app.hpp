@@ -16,9 +16,8 @@ private:
     void WriteDebugMessage(Args... args) const {
         ((std::cout << "Debug") << ... << args);
     }
-    
+
     void WriteMessage(std::string_view message) const;
-    void DrawControlsHint() const;
     void DisplayGameStatus() const;
 
     void DisplayDices() const;
@@ -28,8 +27,7 @@ private:
 
     static constexpr std::string_view USER_MESSAGE_WRAPS = "#====================#";
     static constexpr std::string_view CONTROLS_HINT =
-        R"(
- Choose action
+        R"(Select dices by entering their indexes delimetered with spaces or choose action
  [S/s] to stash current score and continue
  [E/e] to save score and pass turn
 )";

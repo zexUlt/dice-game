@@ -17,12 +17,28 @@ void Player::RollDices() {
     }
 }
 
-void Player::UpdateStashedDices(const std::vector<int>& stashedIndices) {
-    StashedDices_.insert(stashedIndices.begin(), stashedIndices.end());
+void Player::FinishRound() {
+    StashedScore += UnstashedScore;
+    UnstashedScore = 0;
+    StashedDices_.insert(LastSelectedDices_.begin(), LastSelectedDices_.end());
 
     if (StashedDices_.size() == 6) {
         StashedDices_.clear();
     }
+
+    LastSelectedDices_.clear();
+}
+
+void Player::FinishTurn() {
+    TotalScore += StashedScore;
+    StashedScore = 0;
+
+    LastSelectedDices_.clear();
+    StashedDices_.clear();
+}
+
+void Player::SaveLastSelectedDices(const std::vector<int>& selectedDices) {
+    LastSelectedDices_ = selectedDices;
 }
 
 std::vector<std::pair<int, int>> Player::GetDicesState() const {
@@ -39,7 +55,7 @@ std::vector<std::pair<int, int>> Player::GetDicesState() const {
     return dicesState;
 }
 
-std::vector<int> Player::SelectDices(std::vector<int> selection) const {
+std::vector<int> Player::SelectDices(const std::vector<int>& selection) const {
     std::vector<int> selectedDices;
     selectedDices.reserve(selection.size());
 

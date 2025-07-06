@@ -3,35 +3,51 @@
 #include "common/exceptions.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <exception>
 #include <iostream>
 #include <optional>
-#include <vector>
 #include <sstream>
+#include <vector>
 
-std::pair<bool, std::optional<std::string_view>> UserInputComponent::AskForDiceSelection(std::vector<int>& outSelection) const {
+std::pair<UserInputComponent::InputResult, std::optional<std::string_view>>
+UserInputComponent::AskForInput(std::vector<int>& outSelection) const {
     std::string buf;
     if (!std::getline(std::cin, buf)) {
         throw UserInputException("Can't read stdin");
     }
 
+    if (!std::isdigit(buf[0])) {
+        if (buf.size() > 1) {
+            return {InputResult::Error, "Unknown command. Try again"};
+        }
+
+        if (std::tolower(buf[0]) == STASH_COMMAND) {
+            return {InputResult::Stash, std::nullopt};
+        }
+
+        if (std::tolower(buf[0]) == FINISH_COMMAND) {
+            return {InputResult::Finish, std::nullopt};
+        }
+    }
+
     switch (ParseUserSelectedDices(buf, outSelection)) {
         case EParseResult::NonDigitInput: {
-            return {false, "Please, enter digits from 1 to 6 only\n"};
+            return {InputResult::Error, "Please, enter digits from 1 to 6 only\n"};
         }
         case EParseResult::TooMuchInput: {
-            return {false, "No more than 6 digits expected\n"};
+            return {InputResult::Error, "No more than 6 digits expected\n"};
         }
         case EParseResult::OK: {
             if (!ValidateSelectedDices(outSelection)) {
                 outSelection.clear();
-                return {false, "Digits from [1, 6] range are expected\n"};
+                return {InputResult::Error, "Digits from [1, 6] range are expected\n"};
             }
             break;
         }
     }
 
-    return {true, std::nullopt};
+    return {InputResult::DiceSelect, std::nullopt};
 }
 
 UserInputComponent::EParseResult UserInputComponent::ParseUserSelectedDices(const std::string& userInput,
